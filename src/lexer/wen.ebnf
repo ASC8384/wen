@@ -1,0 +1,20 @@
+SourceCharacter ::=  #x0009 | #x000A | #x000D | [#x0020-#xFFFF]
+
+StringCharacter ::= SourceCharacter - '"'
+LiteralString   ::= '"' '"' Ignored | '"' StringCharacter '"' Ignored
+
+Name            ::= [_A-Za-z][_0-9A-Za-z]*
+Variable        ::= "$" Name Ignored
+
+exp             ::=  nil | false | true | Numeral | exp binop exp | unop exp | LiteralString | Variable
+
+
+Assignment      ::= Variable Ignored "=" Ignored LiteralString Ignored
+Print           ::= "print" "(" Ignored Variable Ignored ")" Ignored
+
+stat            ::=  Assignment | Print | label | break | goto Name | if exp then block "elseif exp then block"* "else block"? end
+
+block           ::= stat+
+retstat         ::= return exp+
+
+SourceCode      ::= block+
