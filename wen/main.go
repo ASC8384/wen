@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/ASC8384/wen/src/compiler"
@@ -17,7 +16,7 @@ func main() {
 		return
 	}
 	filename := args[1]
-	code, err := ioutil.ReadFile(filename)
+	code, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("Error reading file: %s\n", filename)
 		return
