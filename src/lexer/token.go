@@ -13,6 +13,13 @@ const (
 	TOKEN_IGNORED            // Ignored
 	TOKEN_IDENTIFIER         // identifier
 	TOKEN_PRINT              // print
+	TOKEN_INC_PTR            // >
+	TOKEN_DEC_PTR            // <
+	TOKEN_INC_MEM            // +
+	TOKEN_DEC_MEM            // -
+	TOKEN_SCANF              // ,
+	TOKEN_LOOP_OPEN          // [
+	TOKEN_LOOP_CLOSE         // ]
 	// TOKEN_KW_IF           // if
 )
 
@@ -26,10 +33,17 @@ var TokenNameMap = map[int]string{
 	TOKEN_DUOQUOTE:    "\"\"",
 	TOKEN_NAME:        "Name",
 	TOKEN_IGNORED:     "Ignored",
-	TOKEN_PRINT:       "print",
+	TOKEN_PRINT:       "o",
+	TOKEN_INC_PTR:     "i",
+	TOKEN_DEC_PTR:     "a",
+	TOKEN_INC_MEM:     "l",
+	TOKEN_DEC_MEM:     "e",
+	TOKEN_LOOP_OPEN:   "b",
+	TOKEN_LOOP_CLOSE:  "u",
+	TOKEN_SCANF:       "v",
 }
 
 var keywords = map[string]int{
-	"print": TOKEN_PRINT,
+	"o": TOKEN_PRINT,
 	// "if": TOKEN_KW_IF,
 }
