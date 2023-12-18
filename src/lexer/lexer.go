@@ -124,6 +124,9 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 	case 'v':
 		lexer.next(1)
 		return lexer.line, TOKEN_SCANF, "v"
+	case 'o':
+		lexer.next(1)
+		return lexer.line, TOKEN_PRINT, "o"
 	}
 	c := lexer.chunk[0]
 	// check multiple character token

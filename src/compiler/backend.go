@@ -8,8 +8,14 @@ import (
 	. "github.com/ASC8384/wen/src/parser"
 )
 
+const MEM_SIZE int = 30000
+
 type GlobalVariables struct {
 	Variables map[string]string
+}
+
+type GlobalMemory struct {
+	Memory []int
 }
 
 func NewGlobalVariables() *GlobalVariables {
@@ -18,11 +24,25 @@ func NewGlobalVariables() *GlobalVariables {
 	return &g
 }
 
+func NewGlobalMemory() *GlobalMemory {
+	var m GlobalMemory
+	m.Memory = make([]int, MEM_SIZE)
+	m.Memory[2] = 2222
+	return &m
+}
+
+func NewGlobalPointer() *int {
+	var ptr int
+	return &ptr
+}
+
 func Execute(code, filename string) {
 	var ast *Block
 	var err error
 
 	g := NewGlobalVariables()
+	m := NewGlobalMemory()
+	p := NewGlobalPointer()
 
 	// parse
 	if ast, err = Parse(code, filename); err != nil {
@@ -30,28 +50,28 @@ func Execute(code, filename string) {
 	}
 
 	// resolve
-	if err = resolveAST(g, ast); err != nil {
+	if err = resolveAST(g, m, p, ast); err != nil {
 		panic(err)
 	}
 }
 
-func resolveAST(g *GlobalVariables, ast *Block) error {
+func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, ast *Block) error {
 	if len(ast.Stats) == 0 {
 		return errors.New("resolveAST(): no code to execute, please check your input.")
 	}
 	for _, statement := range ast.Stats {
-		if err := resolveStatement(g, statement); err != nil {
+		if err := resolveStatement(g, m, p, statement); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func resolveStatement(g *GlobalVariables, statement Stat) error {
+func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Stat) error {
 	if assignment, ok := statement.(*AssignStat); ok {
 		return resolveAssignment(g, assignment)
 	} else if print, ok := statement.(*Print); ok {
-		return resolvePrint(g, print)
+		return resolvePrint(g, m, p, print)
 	} else {
 		return errors.New("resolveStatement(): undefined statement type.")
 	}
@@ -66,8 +86,12 @@ func resolveAssignment(g *GlobalVariables, assignment *AssignStat) error {
 	return nil
 }
 
-func resolvePrint(g *GlobalVariables, print *Print) error {
+func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) error {
 	varName := ""
+	if nil == print.Variable {
+		fmt.Print(m.Memory[*p])
+		return nil
+	}
 	if varName = print.Variable.Name; varName == "" {
 		return errors.New("resolvePrint(): variable name can NOT be empty.")
 	}
