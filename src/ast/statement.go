@@ -17,6 +17,12 @@ type Print struct {
 	Variable *Variable
 }
 
+type PointerStat struct {
+	Line    int
+	Pointer int
+}
+
 // 属于
 var _ Stat = (*Print)(nil)
 var _ Stat = (*AssignStat)(nil)
+var _ Stat = (*PointerStat)(nil)

@@ -72,6 +72,8 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 		return resolveAssignment(g, assignment)
 	} else if print, ok := statement.(*Print); ok {
 		return resolvePrint(g, m, p, print)
+	} else if pointer, ok := statement.(*PointerStat); ok {
+		return resolvePointer(p, pointer)
 	} else {
 		return errors.New("resolveStatement(): undefined statement type.")
 	}
@@ -101,5 +103,10 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 		return errors.New(fmt.Sprintf("resolvePrint(): variable '$%s'not found.", varName))
 	}
 	fmt.Print(str)
+	return nil
+}
+
+func resolvePointer(p *int, pointer *PointerStat) error {
+	*p += pointer.Pointer
 	return nil
 }

@@ -16,8 +16,12 @@ func parseStat(lexer *Lexer) (Stat, error) {
 		return parsePrint(lexer)
 	case TOKEN_VAR_PREFIX:
 		return parseAssignStat(lexer)
+	case TOKEN_INC_PTR:
+		return parseIncPtr(lexer)
+	case TOKEN_DEC_PTR:
+		return parseDecPtr(lexer)
 	default:
-		return nil, errors.New("parseStat(): unknown Stat.")
+		return nil, errors.New("parseStat(): unknown Stat." + TokenNameMap[lexer.LookAhead()])
 	}
 }
 
@@ -28,14 +32,18 @@ func parsePrint(lexer *Lexer) (*Print, error) {
 
 	print.Line = lexer.Line()
 	lexer.NextTokenIs(TOKEN_PRINT)
-	lexer.NextTokenIs(TOKEN_LEFT_PAREN)
-	lexer.LookAheadAndSkip(TOKEN_IGNORED)
-	if print.Variable, err = parseVariable(lexer); err != nil {
-		return nil, err
+	if TOKEN_LEFT_PAREN == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_LEFT_PAREN)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		if print.Variable, err = parseVariable(lexer); err != nil {
+			return nil, err
+		}
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		lexer.NextTokenIs(TOKEN_RIGHT_PAREN)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	} else {
+		print.Variable = nil
 	}
-	lexer.LookAheadAndSkip(TOKEN_IGNORED)
-	lexer.NextTokenIs(TOKEN_RIGHT_PAREN)
-	lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	return &print, nil
 }
 
@@ -56,4 +64,24 @@ func parseAssignStat(lexer *Lexer) (*AssignStat, error) {
 	}
 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	return &assignment, nil
+}
+
+func parseIncPtr(lexer *Lexer) (*PointerStat, error) {
+	var PointerStat PointerStat
+
+	PointerStat.Line = lexer.Line()
+	lexer.NextTokenIs(TOKEN_INC_PTR)
+	PointerStat.Pointer = 1
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &PointerStat, nil
+}
+
+func parseDecPtr(lexer *Lexer) (*PointerStat, error) {
+	var PointerStat PointerStat
+
+	PointerStat.Line = lexer.Line()
+	lexer.NextTokenIs(TOKEN_DEC_PTR)
+	PointerStat.Pointer = -1
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &PointerStat, nil
 }

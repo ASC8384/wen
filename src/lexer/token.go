@@ -45,5 +45,12 @@ var TokenNameMap = map[int]string{
 
 var keywords = map[string]int{
 	"o": TOKEN_PRINT,
+	"i": TOKEN_INC_PTR,
+	"a": TOKEN_DEC_PTR,
+	"l": TOKEN_INC_MEM,
+	"e": TOKEN_DEC_MEM,
+	"b": TOKEN_LOOP_OPEN,
+	"u": TOKEN_LOOP_CLOSE,
+	"v": TOKEN_SCANF,
 	// "if": TOKEN_KW_IF,
 }
