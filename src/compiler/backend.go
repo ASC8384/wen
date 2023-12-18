@@ -113,7 +113,7 @@ func resolveAssignment(g *GlobalVariables, assignment *AssignStat) error {
 func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) error {
 	varName := ""
 	if nil == print.Variable {
-		fmt.Print(m.Memory[*p])
+		fmt.Printf("%c", m.Memory[*p])
 		return nil
 	}
 	if varName = print.Variable.Name; varName == "" {
