@@ -74,6 +74,8 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 		return resolvePrint(g, m, p, print)
 	} else if pointer, ok := statement.(*PointerStat); ok {
 		return resolvePointer(p, pointer)
+	} else if cell, ok := statement.(*CellStat); ok {
+		return resolveCell(m, p, cell)
 	} else {
 		return errors.New("resolveStatement(): undefined statement type.")
 	}
@@ -108,5 +110,10 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 
 func resolvePointer(p *int, pointer *PointerStat) error {
 	*p += pointer.Pointer
+	return nil
+}
+
+func resolveCell(m *GlobalMemory, p *int, cell *CellStat) error {
+	m.Memory[*p] += cell.Cell
 	return nil
 }

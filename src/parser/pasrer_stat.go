@@ -20,6 +20,10 @@ func parseStat(lexer *Lexer) (Stat, error) {
 		return parseIncPtr(lexer)
 	case TOKEN_DEC_PTR:
 		return parseDecPtr(lexer)
+	case TOKEN_INC_MEM:
+		return parseIncMem(lexer)
+	case TOKEN_DEC_MEM:
+		return parseDecMem(lexer)
 	default:
 		return nil, errors.New("parseStat(): unknown Stat." + TokenNameMap[lexer.LookAhead()])
 	}
@@ -84,4 +88,22 @@ func parseDecPtr(lexer *Lexer) (*PointerStat, error) {
 	PointerStat.Pointer = -1
 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	return &PointerStat, nil
+}
+
+func parseIncMem(lexer *Lexer) (*CellStat, error) {
+	var CellStat CellStat
+	CellStat.Line = lexer.Line()
+	lexer.NextTokenIs(TOKEN_INC_MEM)
+	CellStat.Cell = 1
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &CellStat, nil
+}
+
+func parseDecMem(lexer *Lexer) (*CellStat, error) {
+	var CellStat CellStat
+	CellStat.Line = lexer.Line()
+	lexer.NextTokenIs(TOKEN_DEC_MEM)
+	CellStat.Cell = -1
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &CellStat, nil
 }

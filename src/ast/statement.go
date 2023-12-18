@@ -22,6 +22,11 @@ type PointerStat struct {
 	Pointer int
 }
 
+type CellStat struct {
+	Line int
+	Cell int
+}
+
 // 属于
 var _ Stat = (*Print)(nil)
 var _ Stat = (*AssignStat)(nil)
