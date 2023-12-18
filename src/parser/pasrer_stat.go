@@ -9,24 +9,40 @@ import (
 
 var _statEmpty = &EmptyStat{}
 
-func parseStat(lexer *Lexer) (Stat, error) {
+func parseStat(lexer *Lexer) ([]Stat, error) {
 	lexer.LookAheadAndSkip(TOKEN_IGNORED) // skip if source code start with ignored token
+	var stats []Stat
+	var stat Stat
+	var err error
+	// var loops LoopStat
+
 	switch lexer.LookAhead() {
 	case TOKEN_PRINT:
-		return parsePrint(lexer)
+		stat, err = parsePrint(lexer)
 	case TOKEN_VAR_PREFIX:
-		return parseAssignStat(lexer)
+		stat, err = parseAssignStat(lexer)
 	case TOKEN_INC_PTR:
-		return parseIncPtr(lexer)
+		stat, err = parseIncPtr(lexer)
 	case TOKEN_DEC_PTR:
-		return parseDecPtr(lexer)
+		stat, err = parseDecPtr(lexer)
 	case TOKEN_INC_MEM:
-		return parseIncMem(lexer)
+		stat, err = parseIncMem(lexer)
 	case TOKEN_DEC_MEM:
-		return parseDecMem(lexer)
+		stat, err = parseDecMem(lexer)
+	case TOKEN_LOOP_OPEN:
+		stat, err = parseLoopOpen(lexer)
+	case TOKEN_LOOP_CLOSE:
+		stats, err = paeseLoopClose(lexer)
 	default:
-		return nil, errors.New("parseStat(): unknown Stat." + TokenNameMap[lexer.LookAhead()])
+		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()])
 	}
+	if stat != nil {
+		stats = append(stats, stat)
+	}
+	// if loops.Stats != nil {
+	// 	stats = append(stats, loops)
+	// }
+	return stats, err
 }
 
 // Print ::= "print" "(" Ignored Variable Ignored ")" Ignored
@@ -106,4 +122,48 @@ func parseDecMem(lexer *Lexer) (*CellStat, error) {
 	CellStat.Cell = -1
 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	return &CellStat, nil
+}
+
+func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
+	var body LoopStat
+	var err error
+
+	lexer.NextTokenIs(TOKEN_LOOP_OPEN)
+	// Parse statements inside the loop until we encounter TOKEN_LOOP_CLOSE
+	for lexer.LookAhead() != TOKEN_LOOP_CLOSE {
+		if lexer.LookAhead() == TOKEN_EOF {
+			return nil, errors.New("parseLoopOpen(): loop never closes")
+		}
+
+		var stat []Stat
+		stat, err = parseStat(lexer)
+		if err != nil {
+			return nil, err
+		}
+		body.Stats = append(body.Stats, stat...)
+	}
+
+	// Ensure we consume the ']' TOKEN_LOOP_CLOSE
+	if lexer.LookAhead() == TOKEN_LOOP_CLOSE {
+		lexer.NextToken()
+	} else {
+		return nil, errors.New("parseLoopOpen(): expected ']' at the end of the loop")
+	}
+
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &body, nil
+}
+
+// func paeseLoopClose(lexer *Lexer) (*LoopStat, error) {
+// 	var loop LoopStat
+// 	// var err error
+
+// 	loop.Line = lexer.Line()
+// 	lexer.NextTokenIs(TOKEN_LOOP_CLOSE)
+// 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+// 	return &loop, nil
+// }
+
+func paeseLoopClose(lexer *Lexer) ([]Stat, error) {
+	return nil, errors.New("parseLoopClose(): unexpected ']' without matching '['")
 }

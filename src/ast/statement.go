@@ -27,7 +27,13 @@ type CellStat struct {
 	Cell int
 }
 
+type LoopStat struct {
+	Line  int
+	Stats []Stat
+}
+
 // 属于
 var _ Stat = (*Print)(nil)
 var _ Stat = (*AssignStat)(nil)
 var _ Stat = (*PointerStat)(nil)
+var _ Stat = (*CellStat)(nil)

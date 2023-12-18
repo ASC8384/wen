@@ -27,7 +27,6 @@ func NewGlobalVariables() *GlobalVariables {
 func NewGlobalMemory() *GlobalMemory {
 	var m GlobalMemory
 	m.Memory = make([]int, MEM_SIZE)
-	m.Memory[2] = 2222
 	return &m
 }
 
@@ -68,17 +67,38 @@ func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, ast *Block) error {
 }
 
 func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Stat) error {
-	if assignment, ok := statement.(*AssignStat); ok {
-		return resolveAssignment(g, assignment)
-	} else if print, ok := statement.(*Print); ok {
-		return resolvePrint(g, m, p, print)
-	} else if pointer, ok := statement.(*PointerStat); ok {
-		return resolvePointer(p, pointer)
-	} else if cell, ok := statement.(*CellStat); ok {
-		return resolveCell(m, p, cell)
-	} else {
-		return errors.New("resolveStatement(): undefined statement type.")
+	// fmt.Printf("statement: %T\n", statement)
+	switch s := statement.(type) {
+	case *AssignStat:
+		return resolveAssignment(g, s)
+	case *Print:
+		return resolvePrint(g, m, p, s)
+	case *PointerStat:
+		return resolvePointer(p, s)
+	case *CellStat:
+		return resolveCell(m, p, s)
+	case *LoopStat:
+		return resolveLoop(g, m, p, s)
+	default:
+		return fmt.Errorf("resolveStatement(): undefined statement type: %T", statement)
 	}
+}
+
+func resolveLoop(g *GlobalVariables, m *GlobalMemory, p *int, loop *LoopStat) error {
+	for m.Memory[*p] != 0 { // Continue looping while the current cell is not zero
+		for _, stat := range loop.Stats {
+			err := resolveStatement(g, m, p, stat) // Resolve each statement in the loop body
+			if err != nil {
+				return err // Return if an error occurs
+			}
+
+			// It's important to check bounds of the memory and pointer
+			if *p < 0 || *p >= len(m.Memory) {
+				return errors.New("resolveLoop(): data pointer out of bounds")
+			}
+		}
+	}
+	return nil
 }
 
 func resolveAssignment(g *GlobalVariables, assignment *AssignStat) error {

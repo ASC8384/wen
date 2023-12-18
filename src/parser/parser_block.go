@@ -22,12 +22,12 @@ func parseBlock(lexer *Lexer) (*Block, error) {
 func parseStats(lexer *Lexer) ([]Stat, error) {
 	var statements []Stat
 	for !_isReturnOrBlockEnd(lexer.LookAhead()) {
-		var statement Stat
+		var statement []Stat
 		var err error
 		if statement, err = parseStat(lexer); err != nil {
 			return nil, err
 		}
-		statements = append(statements, statement)
+		statements = append(statements, statement...)
 	}
 	return statements, nil
 }
