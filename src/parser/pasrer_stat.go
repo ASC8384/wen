@@ -19,6 +19,8 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 	switch lexer.LookAhead() {
 	case TOKEN_PRINT:
 		stat, err = parsePrint(lexer)
+	case TOKEN_SCANF:
+		stat, err = parseScanf(lexer)
 	case TOKEN_VAR_PREFIX:
 		stat, err = parseAssignStat(lexer)
 	case TOKEN_INC_PTR:
@@ -65,6 +67,23 @@ func parsePrint(lexer *Lexer) (*Print, error) {
 		print.Variable = nil
 	}
 	return &print, nil
+}
+
+func parseScanf(lexer *Lexer) (*Scanf, error) {
+	var scanf Scanf
+	var err error
+
+	scanf.Line = lexer.Line()
+	lexer.NextTokenIs(TOKEN_SCANF)
+	if TOKEN_VAR_PREFIX == lexer.LookAhead() {
+		if scanf.Variable, err = parseVariable(lexer); err != nil {
+			return nil, err
+		}
+	} else {
+		scanf.Variable = nil
+	}
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &scanf, nil
 }
 
 // Assignment      ::= Variable Ignored "=" Ignored LiteralString Ignored

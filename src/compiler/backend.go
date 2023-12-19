@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	. "github.com/ASC8384/wen/src/ast"
 	. "github.com/ASC8384/wen/src/parser"
@@ -73,6 +74,8 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 		return resolveAssignment(g, s)
 	case *Print:
 		return resolvePrint(g, m, p, s)
+	case *Scanf:
+		return resolveScanf(g, m, p, s)
 	case *PointerStat:
 		return resolvePointer(p, s)
 	case *CellStat:
@@ -125,6 +128,44 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 		return errors.New(fmt.Sprintf("resolvePrint(): variable '$%s'not found.", varName))
 	}
 	fmt.Print(str)
+	return nil
+}
+
+func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) error {
+	varName := ""
+	if nil == scanf.Variable {
+		buf := make([]byte, 1)
+		len, err := os.Stdin.Read(buf)
+		if err != nil {
+			return err
+		}
+		if len != 1 {
+			return fmt.Errorf("read %d bytes of input, not 1", len)
+		}
+		m.Memory[*p] = int(buf[0])
+		return nil
+	}
+	if varName = scanf.Variable.Name; varName == "" {
+		return errors.New("resolvePrint(): variable name can NOT be empty.")
+	}
+	// ok := false
+	// fmt.Print(str)
+	// var input string
+	// fmt.Scanf("%c", &input)
+	buf := make([]byte, 1)
+	len, err := os.Stdin.Read(buf)
+	if err != nil {
+		return err
+	}
+	if len != 1 {
+		return fmt.Errorf("read %d bytes of input, not 1", len)
+	}
+	g.Variables[varName] = string(buf[0])
+	// _, err := fmt.Scanln(g.Variables[varName])
+	// if err != nil {
+	// 	fmt.Println("Error reading key:", err)
+	// 	return err
+	// }
 	return nil
 }
 

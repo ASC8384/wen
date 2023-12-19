@@ -17,6 +17,11 @@ type Print struct {
 	Variable *Variable
 }
 
+type Scanf struct {
+	Line     int
+	Variable *Variable
+}
+
 type PointerStat struct {
 	Line    int
 	Pointer int
