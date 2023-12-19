@@ -178,16 +178,6 @@ func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
 	return &body, nil
 }
 
-// func paeseLoopClose(lexer *Lexer) (*LoopStat, error) {
-// 	var loop LoopStat
-// 	// var err error
-
-// 	loop.Line = lexer.Line()
-// 	lexer.NextTokenIs(TOKEN_LOOP_CLOSE)
-// 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
-// 	return &loop, nil
-// }
-
 func paeseLoopClose(lexer *Lexer) ([]Stat, error) {
 	return nil, errors.New("parseLoopClose(): unexpected ']' without matching '['")
 }

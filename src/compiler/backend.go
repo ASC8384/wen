@@ -11,8 +11,13 @@ import (
 
 const MEM_SIZE int = 30000
 
+type MemoryVariable struct {
+	Start  int
+	Length int
+}
+
 type GlobalVariables struct {
-	Variables map[string]string
+	Variables map[string]MemoryVariable
 }
 
 type GlobalMemory struct {
@@ -21,7 +26,7 @@ type GlobalMemory struct {
 
 func NewGlobalVariables() *GlobalVariables {
 	var g GlobalVariables
-	g.Variables = make(map[string]string)
+	g.Variables = make(map[string]MemoryVariable)
 	return &g
 }
 
@@ -71,7 +76,7 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 	// fmt.Printf("statement: %T\n", statement)
 	switch s := statement.(type) {
 	case *AssignStat:
-		return resolveAssignment(g, s)
+		return resolveAssignment(g, m, p, s)
 	case *Print:
 		return resolvePrint(g, m, p, s)
 	case *Scanf:
@@ -104,12 +109,17 @@ func resolveLoop(g *GlobalVariables, m *GlobalMemory, p *int, loop *LoopStat) er
 	return nil
 }
 
-func resolveAssignment(g *GlobalVariables, assignment *AssignStat) error {
+func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *AssignStat) error {
 	varName := ""
 	if varName = assignment.Variable.Name; varName == "" {
 		return errors.New("resolveAssignment(): variable name can NOT be empty.")
 	}
-	g.Variables[varName] = assignment.String
+	Length := len(assignment.String)
+	for i := 0; i < Length; i++ {
+		m.Memory[*p+i] = int(assignment.String[i])
+	}
+	g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
+	*p += Length
 	return nil
 }
 
@@ -118,16 +128,21 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 	if nil == print.Variable {
 		fmt.Printf("%c", m.Memory[*p])
 		return nil
-	}
-	if varName = print.Variable.Name; varName == "" {
+	} else if varName = print.Variable.Name; varName == "" {
 		return errors.New("resolvePrint(): variable name can NOT be empty.")
+	} else {
+		Start := g.Variables[varName].Start
+		Length := g.Variables[varName].Length
+		for i := 0; i < Length; i++ {
+			fmt.Printf("%c", m.Memory[Start+i])
+		}
+		// str := ""
+		// ok := false
+		// if str, ok = g.Variables[varName]; !ok {
+		// 	return errors.New(fmt.Sprintf("resolvePrint(): variable '$%s'not found.", varName))
+		// }
+		// fmt.Print(str)
 	}
-	str := ""
-	ok := false
-	if str, ok = g.Variables[varName]; !ok {
-		return errors.New(fmt.Sprintf("resolvePrint(): variable '$%s'not found.", varName))
-	}
-	fmt.Print(str)
 	return nil
 }
 
@@ -149,7 +164,13 @@ func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) err
 	} else {
 		var input string
 		fmt.Scanf("%s", &input)
-		g.Variables[varName] = string(input)
+		Length := len(input)
+		for i := 0; i < Length; i++ {
+			m.Memory[*p+i] = int(input[i])
+		}
+		g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
+		*p += Length
+		// g.Variables[varName] = string(input)
 	}
 	return nil
 }
