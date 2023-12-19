@@ -144,28 +144,13 @@ func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) err
 		}
 		m.Memory[*p] = int(buf[0])
 		return nil
-	}
-	if varName = scanf.Variable.Name; varName == "" {
+	} else if varName = scanf.Variable.Name; varName == "" {
 		return errors.New("resolvePrint(): variable name can NOT be empty.")
+	} else {
+		var input string
+		fmt.Scanf("%s", &input)
+		g.Variables[varName] = string(input)
 	}
-	// ok := false
-	// fmt.Print(str)
-	// var input string
-	// fmt.Scanf("%c", &input)
-	buf := make([]byte, 1)
-	len, err := os.Stdin.Read(buf)
-	if err != nil {
-		return err
-	}
-	if len != 1 {
-		return fmt.Errorf("read %d bytes of input, not 1", len)
-	}
-	g.Variables[varName] = string(buf[0])
-	// _, err := fmt.Scanln(g.Variables[varName])
-	// if err != nil {
-	// 	fmt.Println("Error reading key:", err)
-	// 	return err
-	// }
 	return nil
 }
 

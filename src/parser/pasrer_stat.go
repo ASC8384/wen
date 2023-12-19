@@ -75,10 +75,15 @@ func parseScanf(lexer *Lexer) (*Scanf, error) {
 
 	scanf.Line = lexer.Line()
 	lexer.NextTokenIs(TOKEN_SCANF)
-	if TOKEN_VAR_PREFIX == lexer.LookAhead() {
+	if TOKEN_LEFT_PAREN == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_LEFT_PAREN)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
 		if scanf.Variable, err = parseVariable(lexer); err != nil {
 			return nil, err
 		}
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		lexer.NextTokenIs(TOKEN_RIGHT_PAREN)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	} else {
 		scanf.Variable = nil
 	}
