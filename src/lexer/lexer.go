@@ -10,6 +10,7 @@ var reIdentifier = regexp.MustCompile(`^[_\d\w]+`)
 var reNewLine = regexp.MustCompile("\r\n|\n\r|\n|\r")
 
 // var reNumber = regexp.MustCompile(`^0[xX][0-9a-fA-F]*(\.[0-9a-fA-F]*)?([+\-]?[0-9]+)?|^[0-9]*(\.[0-9]*)?([eE][+\-]?[0-9]+)?`)
+var reNumber = regexp.MustCompile(`^[+\-]?[0-9]+`)
 var reOpeningLongBracket = regexp.MustCompile(`^\[=*\[`)
 
 type Lexer struct {
@@ -141,6 +142,12 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 			return lexer.line, TOKEN_NAME, token
 		}
 	}
+	// check number token
+	if isDigit(c) {
+		token := lexer.scanNumber()
+		return lexer.line, TOKEN_NUMBER, token
+		// lexer.error("not support number.")
+	}
 	lexer.error("unexpected symbol near %q", c)
 	return
 }
@@ -240,9 +247,14 @@ func (lexer *Lexer) scanIdentifier() string {
 	return lexer.scan(reIdentifier)
 }
 
-// func (lexer *Lexer) scanNumber() string {
-// 	return lexer.scan(reNumber)
-// }
+func (lexer *Lexer) scanNumber() string {
+	token := lexer.scan(reNumber)
+	// number, err := strconv.Atoi(token)
+	// if err != nil {
+	// 	lexer.error("invalid number: %s", token)
+	// }
+	return token
+}
 
 func (lexer *Lexer) scan(re *regexp.Regexp) string {
 	if token := re.FindString(lexer.chunk); token != "" {
@@ -273,6 +285,10 @@ func (lexer *Lexer) Line() int {
 
 func isLetter(c byte) bool {
 	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+}
+
+func isDigit(c byte) bool {
+	return '0' <= c && c <= '9' || c == '-'
 }
 
 // 返回 token 之前的内容

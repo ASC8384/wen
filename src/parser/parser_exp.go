@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"strconv"
 
 	. "github.com/ASC8384/wen/src/ast"
 	. "github.com/ASC8384/wen/src/lexer"
@@ -30,6 +31,17 @@ func parseString(lexer *Lexer) (string, error) {
 	default:
 		return "", errors.New("parseString(): not a string.")
 	}
+}
+
+func parseInt(lexer *Lexer) (int, error) {
+	var numstr string
+	var err error
+	// var line int
+	if _, numstr = lexer.NextTokenIs(TOKEN_NUMBER); err != nil {
+		return 0, err
+	}
+	num, err := strconv.Atoi(numstr)
+	return num, nil
 }
 
 // Variable ::= "$" Name Ignored

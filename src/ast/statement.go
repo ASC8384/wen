@@ -10,6 +10,8 @@ type AssignStat struct {
 	Line     int
 	Variable *Variable
 	String   string
+	Length   int
+	Start    int
 }
 
 type Print struct {

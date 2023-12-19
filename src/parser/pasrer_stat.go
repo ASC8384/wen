@@ -121,12 +121,23 @@ func parseAssignStat(lexer *Lexer) (*AssignStat, error) {
 		return nil, err
 	}
 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
-	lexer.NextTokenIs(TOKEN_EQUAL)
-	lexer.LookAheadAndSkip(TOKEN_IGNORED)
-	if assignment.String, err = parseString(lexer); err != nil {
-		return nil, err
+	if TOKEN_EQUAL == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_EQUAL)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		if assignment.String, err = parseString(lexer); err != nil {
+			return nil, err
+		}
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	} else if TOKEN_LEFT_PAREN == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_LEFT_PAREN)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		if assignment.Length, err = parseInt(lexer); err != nil {
+			return nil, err
+		}
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		lexer.NextTokenIs(TOKEN_RIGHT_PAREN)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	}
-	lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	return &assignment, nil
 }
 

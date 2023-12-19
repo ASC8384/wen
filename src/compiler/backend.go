@@ -136,11 +136,20 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 		return errors.New("resolveAssignment(): variable name can NOT be empty.")
 	}
 	Length := len(assignment.String)
-	for i := 0; i < Length; i++ {
-		m.Memory[*p+i] = int(assignment.String[i])
+	if Length != 0 {
+		for i := 0; i < Length; i++ {
+			m.Memory[*p+i] = int(assignment.String[i])
+		}
+		g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
+		*p += Length
+	} else {
+		if assignment.Length != 0 {
+			// Length = assignment.Length
+			var gVar = g.Variables[varName]
+			gVar.Length += assignment.Length
+			g.Variables[varName] = gVar
+		}
 	}
-	g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
-	*p += Length
 	return nil
 }
 
