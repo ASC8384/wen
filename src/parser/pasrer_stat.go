@@ -35,6 +35,8 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 		stat, err = parseLoopOpen(lexer)
 	case TOKEN_LOOP_CLOSE:
 		stats, err = paeseLoopClose(lexer)
+	case TOKEN_INIT_DATA:
+		stat, err = parseInitData(lexer)
 	default:
 		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()])
 	}
@@ -45,6 +47,24 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 	// 	stats = append(stats, loops)
 	// }
 	return stats, err
+}
+
+func parseInitData(lexer *Lexer) (*StringExp, error) {
+	var InitData StringExp
+	// var err error
+
+	InitData.Line = lexer.Line()
+	lexer.NextTokenIs(TOKEN_INIT_DATA)
+	// lexer.LookAheadAndSkip(TOKEN_IGNORED)
+
+	// for lexer.LookAhead() != TOKEN_EOF {
+	// 	InitData.Str += string(lexer.NextChar())
+
+	// }
+	InitData.Str += lexer.GetChunk()
+
+	// lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &InitData, nil
 }
 
 // Print ::= "print" "(" Ignored Variable Ignored ")" Ignored

@@ -64,6 +64,17 @@ func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, ast *Block) error {
 	if len(ast.Stats) == 0 {
 		return errors.New("resolveAST(): no code to execute, please check your input.")
 	}
+	// Execute init statements first
+	// for _, statement := range ast.Stats {
+	switch s := ast.Stats[len(ast.Stats)-1].(type) {
+	case *StringExp:
+		if err := resolveInit(m, s); err != nil {
+			return err
+		}
+		break
+	}
+	// }
+	// Execute all other statements
 	for _, statement := range ast.Stats {
 		if err := resolveStatement(g, m, p, statement); err != nil {
 			return err
@@ -87,9 +98,19 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 		return resolveCell(m, p, s)
 	case *LoopStat:
 		return resolveLoop(g, m, p, s)
+	case *StringExp:
+		return resolveInit(m, s)
 	default:
 		return fmt.Errorf("resolveStatement(): undefined statement type: %T", statement)
 	}
+}
+
+func resolveInit(m *GlobalMemory, init *StringExp) error {
+	Length := len(init.Str)
+	for i := 0; i < Length; i++ {
+		m.Memory[i] = int(init.Str[i])
+	}
+	return nil
 }
 
 func resolveLoop(g *GlobalVariables, m *GlobalMemory, p *int, loop *LoopStat) error {

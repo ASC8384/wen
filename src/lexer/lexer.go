@@ -127,6 +127,9 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 	case 'o':
 		lexer.next(1)
 		return lexer.line, TOKEN_PRINT, "o"
+	case '&':
+		lexer.next(1)
+		return lexer.line, TOKEN_INIT_DATA, "&"
 	}
 	c := lexer.chunk[0]
 	// check multiple character token
@@ -280,4 +283,18 @@ func (lexer *Lexer) ScanBeforeToken(token string) string {
 	}
 	lexer.next(len(s[0]))
 	return s[0]
+}
+
+// 返回 lexer.chunk[0] 的内容，并跳过1个字符
+func (lexer *Lexer) NextChar() byte {
+	c := lexer.chunk[0]
+	lexer.next(1)
+	return c
+}
+
+// 返回 lexer.chunk 的内容，并跳过所有
+func (lexer *Lexer) GetChunk() string {
+	ret := lexer.chunk
+	lexer.next(len(lexer.chunk))
+	return ret
 }
