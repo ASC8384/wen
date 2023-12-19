@@ -21,8 +21,8 @@ const (
 	TOKEN_LOOP_OPEN          // [
 	TOKEN_LOOP_CLOSE         // ]
 	TOKEN_INIT_DATA          // &
-	TOKEN_VAR_LENGTH         // 【
-	TOKEN_VAR_START          // 】
+	TOKEN_VAR_LEFT         // 【
+	TOKEN_VAR_RIGHT          // 】
 	TOKEN_NUMBER             // number
 	// TOKEN_KW_IF           // if
 )
@@ -46,8 +46,8 @@ var TokenNameMap = map[int]string{
 	TOKEN_LOOP_CLOSE:  "u",
 	TOKEN_SCANF:       "v",
 	TOKEN_INIT_DATA:   "&",
-	TOKEN_VAR_LENGTH:  "[",
-	TOKEN_VAR_START:   "]",
+	TOKEN_VAR_LEFT:  "[",
+	TOKEN_VAR_RIGHT:   "]",
 }
 
 var keywords = map[string]int{

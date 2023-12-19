@@ -94,6 +94,12 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 	case ')':
 		lexer.next(1)
 		return lexer.line, TOKEN_RIGHT_PAREN, ")"
+	case '[':
+		lexer.next(1)
+		return lexer.line, TOKEN_VAR_LEFT, "["
+	case ']':
+		lexer.next(1)
+		return lexer.line, TOKEN_VAR_RIGHT, "]"
 	case '=':
 		lexer.next(1)
 		return lexer.line, TOKEN_EQUAL, "="

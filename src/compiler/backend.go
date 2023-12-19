@@ -148,6 +148,12 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 			var gVar = g.Variables[varName]
 			gVar.Length += assignment.Length
 			g.Variables[varName] = gVar
+		} else if assignment.Start != 0 {
+			var gVar = g.Variables[varName]
+			gVar.Start += assignment.Start
+			g.Variables[varName] = gVar
+		} else {
+			return errors.New("Resolve Assignment Error")
 		}
 	}
 	return nil
