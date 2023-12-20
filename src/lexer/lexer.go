@@ -137,6 +137,9 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 	case '&':
 		lexer.next(1)
 		return lexer.line, TOKEN_INIT_DATA, "&"
+	case '@':
+		lexer.next(1)
+		return lexer.line, TOKEN_VAR_INT, "@"
 	}
 	c := lexer.chunk[0]
 	// check multiple character token

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	. "github.com/ASC8384/wen/src/ast"
 	. "github.com/ASC8384/wen/src/parser"
@@ -99,7 +100,7 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 	case *LoopStat:
 		return resolveLoop(g, m, p, s)
 	case *StringExp:
-		return resolveInit(m, s)
+		return nil
 	default:
 		return fmt.Errorf("resolveStatement(): undefined statement type: %T", statement)
 	}
@@ -137,11 +138,21 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 	}
 	Length := len(assignment.String)
 	if Length != 0 {
-		for i := 0; i < Length; i++ {
-			m.Memory[*p+i] = int(assignment.String[i])
+		if assignment.Int {
+			val, err := strconv.Atoi(assignment.String)
+			if err != nil {
+				return err
+			}
+			m.Memory[*p] = val
+			g.Variables[varName] = MemoryVariable{Start: *p, Length: 1}
+			*p += 1
+		} else {
+			for i := 0; i < Length; i++ {
+				m.Memory[*p+i] = int(assignment.String[i])
+			}
+			g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
+			*p += Length
 		}
-		g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
-		*p += Length
 	} else {
 		if assignment.Length != 0 {
 			// Length = assignment.Length
@@ -152,8 +163,6 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 			var gVar = g.Variables[varName]
 			gVar.Start += assignment.Start
 			g.Variables[varName] = gVar
-		} else {
-			return errors.New("Resolve Assignment Error")
 		}
 	}
 	return nil
@@ -162,22 +171,26 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) error {
 	varName := ""
 	if nil == print.Variable {
-		fmt.Printf("%c", m.Memory[*p])
+		if print.Int {
+			fmt.Printf("%d", m.Memory[*p])
+		} else {
+			fmt.Printf("%c", m.Memory[*p])
+		}
 		return nil
 	} else if varName = print.Variable.Name; varName == "" {
 		return errors.New("resolvePrint(): variable name can NOT be empty.")
 	} else {
 		Start := g.Variables[varName].Start
 		Length := g.Variables[varName].Length
-		for i := 0; i < Length; i++ {
-			fmt.Printf("%c", m.Memory[Start+i])
+		if print.Int {
+			for i := 0; i < Length; i++ {
+				fmt.Printf("%d", m.Memory[Start+i])
+			}
+		} else {
+			for i := 0; i < Length; i++ {
+				fmt.Printf("%c", m.Memory[Start+i])
+			}
 		}
-		// str := ""
-		// ok := false
-		// if str, ok = g.Variables[varName]; !ok {
-		// 	return errors.New(fmt.Sprintf("resolvePrint(): variable '$%s'not found.", varName))
-		// }
-		// fmt.Print(str)
 	}
 	return nil
 }
@@ -185,27 +198,41 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) error {
 	varName := ""
 	if nil == scanf.Variable {
-		buf := make([]byte, 1)
-		len, err := os.Stdin.Read(buf)
-		if err != nil {
-			return err
+		if scanf.Int {
+			var input int
+			fmt.Scanf("%d", &input)
+			m.Memory[*p] = input
+		} else {
+			buf := make([]byte, 1)
+			len, err := os.Stdin.Read(buf)
+			if err != nil {
+				return err
+			}
+			if len != 1 {
+				return fmt.Errorf("read %d bytes of input, not 1", len)
+			}
+			m.Memory[*p] = int(buf[0])
 		}
-		if len != 1 {
-			return fmt.Errorf("read %d bytes of input, not 1", len)
-		}
-		m.Memory[*p] = int(buf[0])
 		return nil
 	} else if varName = scanf.Variable.Name; varName == "" {
 		return errors.New("resolvePrint(): variable name can NOT be empty.")
 	} else {
-		var input string
-		fmt.Scanf("%s", &input)
-		Length := len(input)
-		for i := 0; i < Length; i++ {
-			m.Memory[*p+i] = int(input[i])
+		if scanf.Int {
+			var input int
+			fmt.Scanf("%d", &input)
+			m.Memory[*p] = input
+			g.Variables[varName] = MemoryVariable{Start: *p, Length: 1}
+			*p += 1
+		} else {
+			var input string
+			fmt.Scanf("%s", &input)
+			Length := len(input)
+			for i := 0; i < Length; i++ {
+				m.Memory[*p+i] = int(input[i])
+			}
+			g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
+			*p += Length
 		}
-		g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
-		*p += Length
 		// g.Variables[varName] = string(input)
 	}
 	return nil

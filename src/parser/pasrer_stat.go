@@ -55,12 +55,7 @@ func parseInitData(lexer *Lexer) (*StringExp, error) {
 
 	InitData.Line = lexer.Line()
 	lexer.NextTokenIs(TOKEN_INIT_DATA)
-	// lexer.LookAheadAndSkip(TOKEN_IGNORED)
 
-	// for lexer.LookAhead() != TOKEN_EOF {
-	// 	InitData.Str += string(lexer.NextChar())
-
-	// }
 	InitData.Str += lexer.GetChunk()
 
 	// lexer.LookAheadAndSkip(TOKEN_IGNORED)
@@ -74,6 +69,12 @@ func parsePrint(lexer *Lexer) (*Print, error) {
 
 	print.Line = lexer.Line()
 	lexer.NextTokenIs(TOKEN_PRINT)
+	if TOKEN_VAR_INT == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_VAR_INT)
+		print.Int = true
+	} else {
+		print.Int = false
+	}
 	if TOKEN_LEFT_PAREN == lexer.LookAhead() {
 		lexer.NextTokenIs(TOKEN_LEFT_PAREN)
 		lexer.LookAheadAndSkip(TOKEN_IGNORED)
@@ -95,6 +96,12 @@ func parseScanf(lexer *Lexer) (*Scanf, error) {
 
 	scanf.Line = lexer.Line()
 	lexer.NextTokenIs(TOKEN_SCANF)
+	if TOKEN_VAR_INT == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_VAR_INT)
+		scanf.Int = true
+	} else {
+		scanf.Int = false
+	}
 	if TOKEN_LEFT_PAREN == lexer.LookAhead() {
 		lexer.NextTokenIs(TOKEN_LEFT_PAREN)
 		lexer.LookAheadAndSkip(TOKEN_IGNORED)
@@ -123,6 +130,12 @@ func parseAssignStat(lexer *Lexer) (*AssignStat, error) {
 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
 	if TOKEN_EQUAL == lexer.LookAhead() {
 		lexer.NextTokenIs(TOKEN_EQUAL)
+		if TOKEN_VAR_INT == lexer.LookAhead() {
+			lexer.NextTokenIs(TOKEN_VAR_INT)
+			assignment.Int = true
+		} else {
+			assignment.Int = false
+		}
 		lexer.LookAheadAndSkip(TOKEN_IGNORED)
 		if assignment.String, err = parseString(lexer); err != nil {
 			return nil, err

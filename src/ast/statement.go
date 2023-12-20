@@ -12,16 +12,19 @@ type AssignStat struct {
 	String   string
 	Length   int
 	Start    int
+	Int      bool
 }
 
 type Print struct {
 	Line     int
 	Variable *Variable
+	Int      bool
 }
 
 type Scanf struct {
 	Line     int
 	Variable *Variable
+	Int      bool
 }
 
 type PointerStat struct {
