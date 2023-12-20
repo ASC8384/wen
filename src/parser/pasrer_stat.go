@@ -39,6 +39,15 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 		stat, err = parseInitData(lexer)
 	case TOKEN_REG:
 		stat, err = parseReg(lexer)
+	case TOKEN_IF_START:
+		stat, err = parseIf(lexer)
+	case TOKEN_IF_RUSH:
+		stat, err = parseIf(lexer)
+	case TOKEN_IF_END:
+		stat, err = parseIf(lexer)
+	case TOKEN_END:
+		stat, err = parseIf(lexer)
+
 	default:
 		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()])
 	}
@@ -274,4 +283,25 @@ func parseReg(lexer *Lexer) (*RegStat, error) {
 	}
 	return &reg, nil
 
+}
+
+func parseIf(lexer *Lexer) (*IfStat, error) {
+	var ifstat IfStat
+	ifstat.Line = lexer.Line()
+	switch lexer.LookAhead() {
+	case TOKEN_IF_START:
+		lexer.NextTokenIs(TOKEN_IF_START)
+		ifstat.Type = TOKEN_IF_START
+	case TOKEN_IF_RUSH:
+		lexer.NextTokenIs(TOKEN_IF_RUSH)
+		ifstat.Type = TOKEN_IF_RUSH
+	case TOKEN_IF_END:
+		lexer.NextTokenIs(TOKEN_IF_END)
+		ifstat.Type = TOKEN_IF_END
+	case TOKEN_END:
+		lexer.NextTokenIs(TOKEN_END)
+		ifstat.Type = TOKEN_END
+	}
+	lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	return &ifstat, nil
 }

@@ -81,18 +81,52 @@ func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, r *int, ast *Block)
 		}
 		break
 	}
-	// }
 	// Execute all other statements
+	var continueCnt int
+	var rushB bool
 	for _, statement := range ast.Stats {
-		if err := resolveStatement(g, m, p, r, statement); err != nil {
+		if continueCnt > 0 {
+			continueCnt--
+			continue
+		}
+		if err := resolveStatement(rushB, g, m, p, r, statement); err != nil {
+			if err.Error() == ("resolveIf(): rushB") {
+				rushB = true
+				continue
+			} else if err.Error() == ("resolveIf(): end rush B") && rushB {
+				rushB = false
+				continueCnt = 0
+				continue
+			} else if err.Error() == ("resolveIf(): time to die") {
+				return nil
+			} else if err.Error() == "resolveIf(): start == 0" {
+				// fmt.Printf("resolveIf(): if start error\n")
+				continueCnt = 0
+				continue
+			} else if err.Error() == ("resolveIf(): start > 0") {
+				// fmt.Printf("resolveIf(): start > 0\n")
+				continueCnt = 1
+				continue
+			} else if err.Error() == ("resolveIf(): start < 0") {
+				continueCnt = 2
+				continue
+			}
 			return err
 		}
 	}
 	return nil
 }
 
-func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, r *int, statement Stat) error {
+func resolveStatement(rushB bool, g *GlobalVariables, m *GlobalMemory, p *int, r *int, statement Stat) error {
 	// fmt.Printf("statement: %T\n", statement)
+	if rushB {
+		switch statement := statement.(type) {
+		case *IfStat:
+			return resolveIf(m, p, statement)
+		default:
+			return nil
+		}
+	}
 	switch s := statement.(type) {
 	case *AssignStat:
 		return resolveAssignment(g, m, p, s)
@@ -105,9 +139,11 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, r *int, state
 	case *CellStat:
 		return resolveCell(m, p, s)
 	case *LoopStat:
-		return resolveLoop(g, m, p, r, s)
+		return resolveLoop(rushB, g, m, p, r, s)
 	case *RegStat:
 		return resolveReg(m, p, r, s)
+	case *IfStat:
+		return resolveIf(m, p, s)
 	case *StringExp:
 		return nil
 	default:
@@ -118,6 +154,28 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, r *int, state
 /*
 ******************************************************************
  */
+
+func resolveIf(m *GlobalMemory, p *int, ifStat *IfStat) error {
+	if ifStat.Type == lexer.TOKEN_IF_START {
+		if m.Memory[*p] == 0 {
+			*p += 1
+			return errors.New("resolveIf(): start == 0")
+		} else if m.Memory[*p] > 0 {
+			*p += 2
+			return errors.New("resolveIf(): start > 0")
+		} else {
+			*p += 3
+			return errors.New("resolveIf(): start < 0")
+		}
+	} else if ifStat.Type == lexer.TOKEN_IF_RUSH {
+		return errors.New("resolveIf(): rushB")
+	} else if ifStat.Type == lexer.TOKEN_IF_END {
+		return errors.New("resolveIf(): end rush B")
+	} else if ifStat.Type == lexer.TOKEN_END {
+		return errors.New("resolveIf(): time to die")
+	}
+	return nil
+}
 
 func resolveReg(m *GlobalMemory, p *int, r *int, reg *RegStat) error {
 	switch reg.Reg {
@@ -156,10 +214,10 @@ func resolveInit(m *GlobalMemory, init *StringExp) error {
 	return nil
 }
 
-func resolveLoop(g *GlobalVariables, m *GlobalMemory, p *int, r *int, loop *LoopStat) error {
+func resolveLoop(rushB bool, g *GlobalVariables, m *GlobalMemory, p *int, r *int, loop *LoopStat) error {
 	for m.Memory[*p] != 0 { // Continue looping while the current cell is not zero
 		for _, stat := range loop.Stats {
-			err := resolveStatement(g, m, p, r, stat) // Resolve each statement in the loop body
+			err := resolveStatement(rushB, g, m, p, r, stat) // Resolve each statement in the loop body
 			if err != nil {
 				return err // Return if an error occurs
 			}

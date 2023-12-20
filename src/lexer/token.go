@@ -34,6 +34,10 @@ const (
 	TOKEN_REG_DIV
 	TOKEN_REG_MOD
 	TOKEN_REG_READ
+	TOKEN_IF_START
+	TOKEN_IF_RUSH
+	TOKEN_IF_END
+	TOKEN_END
 	// TOKEN_KW_IF           // if
 )
 
@@ -68,6 +72,10 @@ var TokenNameMap = map[int]string{
 	TOKEN_REG_DIV:     "/",
 	TOKEN_REG_MOD:     "%",
 	TOKEN_REG_READ:    "?",
+	TOKEN_IF_START:    "B",
+	TOKEN_IF_RUSH:     "R",
+	TOKEN_IF_END:      "#",
+	TOKEN_END:         "E",
 }
 
 var keywords = map[string]int{
@@ -80,6 +88,7 @@ var keywords = map[string]int{
 	"u": TOKEN_LOOP_CLOSE,
 	"v": TOKEN_SCANF,
 	"A": TOKEN_REG,
+	"E": TOKEN_END,
 	// "&": TOKEN_INIT_DATA,
 	// "if": TOKEN_KW_IF,
 }

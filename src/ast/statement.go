@@ -47,6 +47,11 @@ type RegStat struct {
 	Reg  int
 }
 
+type IfStat struct {
+	Line int
+	Type int
+}
+
 // 属于
 var _ Stat = (*Print)(nil)
 var _ Stat = (*AssignStat)(nil)

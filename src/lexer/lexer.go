@@ -167,6 +167,18 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 	case '?':
 		lexer.next(1)
 		return lexer.line, TOKEN_REG_READ, "?"
+	case 'B':
+		lexer.next(1)
+		return lexer.line, TOKEN_IF_START, "B"
+	case 'R':
+		lexer.next(1)
+		return lexer.line, TOKEN_IF_RUSH, "R"
+	case '#':
+		lexer.next(1)
+		return lexer.line, TOKEN_IF_END, "#"
+	case 'E':
+		lexer.next(1)
+		return lexer.line, TOKEN_END, "E"
 	}
 	c := lexer.chunk[0]
 	// check multiple character token
