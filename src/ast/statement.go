@@ -42,6 +42,11 @@ type LoopStat struct {
 	Stats []Stat
 }
 
+type RegStat struct {
+	Line int
+	Reg  int
+}
+
 // 属于
 var _ Stat = (*Print)(nil)
 var _ Stat = (*AssignStat)(nil)

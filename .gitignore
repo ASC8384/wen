@@ -31,3 +31,6 @@ go.work
 # End of https://www.toptal.com/developers/gitignore/api/go
 
 /pkg/
+
+.vscode/
+.VSCodeCounter/

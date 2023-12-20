@@ -25,6 +25,14 @@ const (
 	TOKEN_VAR_RIGHT          // 】
 	TOKEN_NUMBER             // number
 	TOKEN_VAR_INT            // not acill
+	TOKEN_REG                //register
+	TOKEN_REG_STORE          // store register
+	TOKEN_REG_PLUS           // plus register
+	TOKEN_REG_MINUS
+	TOKEN_REG_MUL
+	TOKEN_REG_DIV
+	TOKEN_REG_MOD
+	TOKEN_REG_READ
 	// TOKEN_KW_IF           // if
 )
 
@@ -50,6 +58,14 @@ var TokenNameMap = map[int]string{
 	TOKEN_VAR_LEFT:    "[",
 	TOKEN_VAR_RIGHT:   "]",
 	TOKEN_VAR_INT:     "@",
+	TOKEN_REG:         "A",
+	TOKEN_REG_STORE:   "!",
+	TOKEN_REG_PLUS:    "+",
+	TOKEN_REG_MINUS:   "-",
+	TOKEN_REG_MUL:     "*",
+	TOKEN_REG_DIV:     "/",
+	TOKEN_REG_MOD:     "%",
+	TOKEN_REG_READ:    "?",
 }
 
 var keywords = map[string]int{
@@ -61,6 +77,7 @@ var keywords = map[string]int{
 	"b": TOKEN_LOOP_OPEN,
 	"u": TOKEN_LOOP_CLOSE,
 	"v": TOKEN_SCANF,
+	"A": TOKEN_REG,
 	// "&": TOKEN_INIT_DATA,
 	// "if": TOKEN_KW_IF,
 }

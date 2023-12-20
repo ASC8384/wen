@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	. "github.com/ASC8384/wen/src/ast"
+	"github.com/ASC8384/wen/src/lexer"
 	. "github.com/ASC8384/wen/src/parser"
 )
 
@@ -42,6 +43,11 @@ func NewGlobalPointer() *int {
 	return &ptr
 }
 
+func NewGlobalRegister() *int {
+	var reg int
+	return &reg
+}
+
 func Execute(code, filename string) {
 	var ast *Block
 	var err error
@@ -49,6 +55,7 @@ func Execute(code, filename string) {
 	g := NewGlobalVariables()
 	m := NewGlobalMemory()
 	p := NewGlobalPointer()
+	r := NewGlobalRegister()
 
 	// parse
 	if ast, err = Parse(code, filename); err != nil {
@@ -56,12 +63,12 @@ func Execute(code, filename string) {
 	}
 
 	// resolve
-	if err = resolveAST(g, m, p, ast); err != nil {
+	if err = resolveAST(g, m, p, r, ast); err != nil {
 		panic(err)
 	}
 }
 
-func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, ast *Block) error {
+func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, r *int, ast *Block) error {
 	if len(ast.Stats) == 0 {
 		return errors.New("resolveAST(): no code to execute, please check your input.")
 	}
@@ -77,14 +84,14 @@ func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, ast *Block) error {
 	// }
 	// Execute all other statements
 	for _, statement := range ast.Stats {
-		if err := resolveStatement(g, m, p, statement); err != nil {
+		if err := resolveStatement(g, m, p, r, statement); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Stat) error {
+func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, r *int, statement Stat) error {
 	// fmt.Printf("statement: %T\n", statement)
 	switch s := statement.(type) {
 	case *AssignStat:
@@ -98,12 +105,47 @@ func resolveStatement(g *GlobalVariables, m *GlobalMemory, p *int, statement Sta
 	case *CellStat:
 		return resolveCell(m, p, s)
 	case *LoopStat:
-		return resolveLoop(g, m, p, s)
+		return resolveLoop(g, m, p, r, s)
+	case *RegStat:
+		return resolveReg(m, p, r, s)
 	case *StringExp:
 		return nil
 	default:
 		return fmt.Errorf("resolveStatement(): undefined statement type: %T", statement)
 	}
+}
+
+/*
+******************************************************************
+ */
+
+func resolveReg(m *GlobalMemory, p *int, r *int, reg *RegStat) error {
+	switch reg.Reg {
+	case lexer.TOKEN_REG_STORE:
+		// store
+		*r = m.Memory[*p]
+	case lexer.TOKEN_REG_PLUS:
+		// plus
+		m.Memory[*p] += *r
+	case lexer.TOKEN_REG_MINUS:
+		// minus
+		m.Memory[*p] -= *r
+	case lexer.TOKEN_REG_MUL:
+		// mul
+		m.Memory[*p] *= *r
+	case lexer.TOKEN_REG_DIV:
+		// div
+		m.Memory[*p] /= *r
+	case lexer.TOKEN_REG_MOD:
+		// mod
+		m.Memory[*p] %= *r
+	case lexer.TOKEN_REG_READ:
+		// read
+		m.Memory[*p] = *r
+	default:
+		return fmt.Errorf("resolveReg(): undefined reg type in %T: %d", reg, reg.Reg)
+	}
+	return nil
 }
 
 func resolveInit(m *GlobalMemory, init *StringExp) error {
@@ -114,10 +156,10 @@ func resolveInit(m *GlobalMemory, init *StringExp) error {
 	return nil
 }
 
-func resolveLoop(g *GlobalVariables, m *GlobalMemory, p *int, loop *LoopStat) error {
+func resolveLoop(g *GlobalVariables, m *GlobalMemory, p *int, r *int, loop *LoopStat) error {
 	for m.Memory[*p] != 0 { // Continue looping while the current cell is not zero
 		for _, stat := range loop.Stats {
-			err := resolveStatement(g, m, p, stat) // Resolve each statement in the loop body
+			err := resolveStatement(g, m, p, r, stat) // Resolve each statement in the loop body
 			if err != nil {
 				return err // Return if an error occurs
 			}

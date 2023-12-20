@@ -41,28 +41,6 @@ func main() {
 		cfilename, err = compiler.GenerateCCode(code)
 		compiler.CompileCCode(cfilename)
 		compiler.RunCCode(cfilename)
-		// ccode := GetCCode(code)
-		// cfilename, err := writeToFile(&ccode)
-		// if err != nil {
-		// 	os.Exit(1)
-		// }
-		// output := "./a.out"
-		// gcc := exec.Command("gcc", "-O3", "-Ofast", "-o", output, cfilename)
-		// gcc.Stdout = os.Stdout
-		// gcc.Stderr = os.Stderr
-		// err = gcc.Run()
-		// if err != nil {
-		// 	fmt.Printf("Error launching gcc: %s\n", err)
-		// 	return
-		// }
-		// exe := exec.Command(output)
-		// exe.Stdout = os.Stdout
-		// exe.Stderr = os.Stderr
-		// err = exe.Run()
-		// if err != nil {
-		// 	fmt.Printf("Error launching %s: %s\n", output, err)
-		// 	os.Exit(1)
-		// }
 	}
 
 }

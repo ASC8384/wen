@@ -37,6 +37,8 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 		stats, err = paeseLoopClose(lexer)
 	case TOKEN_INIT_DATA:
 		stat, err = parseInitData(lexer)
+	case TOKEN_REG:
+		stat, err = parseReg(lexer)
 	default:
 		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()])
 	}
@@ -233,4 +235,38 @@ func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
 
 func paeseLoopClose(lexer *Lexer) ([]Stat, error) {
 	return nil, errors.New("parseLoopClose(): unexpected ']' without matching '['")
+}
+
+func parseReg(lexer *Lexer) (*RegStat, error) {
+	var reg RegStat
+	// var err error
+
+	lexer.NextTokenIs(TOKEN_REG)
+	switch lexer.LookAhead() {
+	case TOKEN_REG_STORE:
+		lexer.NextTokenIs(TOKEN_REG_STORE)
+		reg.Reg = TOKEN_REG_STORE
+	case TOKEN_REG_PLUS:
+		lexer.NextTokenIs(TOKEN_REG_PLUS)
+		reg.Reg = TOKEN_REG_PLUS
+	case TOKEN_REG_MINUS:
+		lexer.NextTokenIs(TOKEN_REG_MINUS)
+		reg.Reg = TOKEN_REG_MINUS
+	case TOKEN_REG_MUL:
+		lexer.NextTokenIs(TOKEN_REG_MUL)
+		reg.Reg = TOKEN_REG_MUL
+	case TOKEN_REG_DIV:
+		lexer.NextTokenIs(TOKEN_REG_DIV)
+		reg.Reg = TOKEN_REG_DIV
+	case TOKEN_REG_MOD:
+		lexer.NextTokenIs(TOKEN_REG_MOD)
+		reg.Reg = TOKEN_REG_MOD
+	case TOKEN_REG_READ:
+		lexer.NextTokenIs(TOKEN_REG_READ)
+		reg.Reg = TOKEN_REG_READ
+	default:
+		return nil, errors.New("parseReg(): unknown Reg." + TokenNameMap[lexer.LookAhead()])
+	}
+	return &reg, nil
+
 }
