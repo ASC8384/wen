@@ -205,6 +205,9 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 			var gVar = g.Variables[varName]
 			gVar.Start += assignment.Start
 			g.Variables[varName] = gVar
+		} else {
+			// TOKEN_VAR_START
+			*p = g.Variables[varName].Start
 		}
 	}
 	return nil

@@ -161,6 +161,11 @@ func parseAssignStat(lexer *Lexer) (*AssignStat, error) {
 		lexer.LookAheadAndSkip(TOKEN_IGNORED)
 		lexer.NextTokenIs(TOKEN_VAR_RIGHT)
 		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+	} else if TOKEN_VAR_START == lexer.LookAhead() {
+		lexer.NextTokenIs(TOKEN_VAR_START)
+		lexer.LookAheadAndSkip(TOKEN_IGNORED)
+		assignment.Start = 0
+		assignment.Length = 0
 	}
 	return &assignment, nil
 }

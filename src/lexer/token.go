@@ -23,6 +23,7 @@ const (
 	TOKEN_INIT_DATA          // &
 	TOKEN_VAR_LEFT           // 【
 	TOKEN_VAR_RIGHT          // 】
+	TOKEN_VAR_START          // var start
 	TOKEN_NUMBER             // number
 	TOKEN_VAR_INT            // not acill
 	TOKEN_REG                //register
@@ -57,6 +58,7 @@ var TokenNameMap = map[int]string{
 	TOKEN_INIT_DATA:   "&",
 	TOKEN_VAR_LEFT:    "[",
 	TOKEN_VAR_RIGHT:   "]",
+	TOKEN_VAR_START:   "^",
 	TOKEN_VAR_INT:     "@",
 	TOKEN_REG:         "A",
 	TOKEN_REG_STORE:   "!",
