@@ -25,8 +25,9 @@ func main() {
 		}
 		code, err := os.ReadFile(filename)
 		if err != nil {
-			fmt.Printf("Error reading file: %s\n", filename)
-			return
+			code = []byte(filename)
+			// fmt.Printf("Error reading file: %s\n", filename)
+			// return
 		}
 		// execute
 		compiler.Execute(string(code), filename, *debug)
