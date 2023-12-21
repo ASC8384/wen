@@ -126,8 +126,10 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 		lexer.next(1)
 		return lexer.line, TOKEN_REG_PLUS, "+"
 	case '-':
-		lexer.next(1)
-		return lexer.line, TOKEN_REG_MINUS, "-"
+		if !isDigit(lexer.chunk[1]) {
+			lexer.next(1)
+			return lexer.line, TOKEN_REG_MINUS, "-"
+		}
 	case '*':
 		lexer.next(1)
 		return lexer.line, TOKEN_REG_MUL, "*"
