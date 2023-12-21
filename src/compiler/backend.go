@@ -55,8 +55,50 @@ func NewGlobalRegister() *int {
 	return &reg
 }
 
+func printAST(node []Stat, indent string) {
+	if node == nil {
+		return
+	}
+
+	fmt.Println(indent, node)
+
+	for _, stat := range node {
+		switch sta := stat.(type) {
+		case *Print:
+			fmt.Println(indent, "Print")
+			fmt.Println(indent+"  ", sta.Variable)
+			fmt.Println(indent+"  ", sta.Int)
+		case *Scanf:
+			fmt.Println(indent, "Scanf")
+			fmt.Println(indent+"  ", sta.Variable)
+			fmt.Println(indent+"  ", sta.Int)
+		case *AssignStat:
+			fmt.Println(indent, "AssignStat")
+			fmt.Println(indent+"  ", sta.Variable)
+			fmt.Println(indent+"  ", sta.String)
+			fmt.Println(indent+"  ", sta.Int)
+			fmt.Println(indent+"  ", sta.Length)
+		case *PointerStat:
+			fmt.Println(indent, "PointerStat")
+			fmt.Println(indent+"  ", sta.Pointer)
+		case *CellStat:
+			fmt.Println(indent, "CellStat")
+			fmt.Println(indent+"  ", sta.Cell)
+		case *LoopStat:
+			fmt.Println(indent, "LoopStat")
+			printAST(sta.Stats, indent+"|    ")
+		case *RegStat:
+			fmt.Println(indent, "RegStat")
+			fmt.Println(indent+"  ", sta.Reg)
+		case *IfStat:
+			fmt.Println(indent, "IfStat")
+			fmt.Println(indent+"  ", sta.Type)
+		}
+	}
+}
+
 // Execute executes the given code with the specified filename.
-func Execute(code, filename string) {
+func Execute(code, filename string, debug bool) {
 	var ast *Block
 	var err error
 
@@ -68,6 +110,13 @@ func Execute(code, filename string) {
 	// parse
 	if ast, err = Parse(code, filename); err != nil {
 		panic(err)
+	}
+
+	if debug {
+		// print Abstract Syntax Tree
+		fmt.Println("AST:")
+		// fmt.Printf("%#v\n", ast)
+		printAST(ast.Stats, "|")
 	}
 
 	// resolve
