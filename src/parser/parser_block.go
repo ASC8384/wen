@@ -18,7 +18,7 @@ func parseBlock(lexer *Lexer) (*Block, error) {
 	}, nil
 }
 
-// Stat ::= Print | AssignStat
+// Stat ::= Print | Assignment | Register | If | Loop | Scanf | Pointer | Cell | Init
 func parseStats(lexer *Lexer) ([]Stat, error) {
 	var statements []Stat
 	for !_isReturnOrBlockEnd(lexer.LookAhead()) {

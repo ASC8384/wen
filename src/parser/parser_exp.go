@@ -29,10 +29,11 @@ func parseString(lexer *Lexer) (string, error) {
 		lexer.LookAheadAndSkip(TOKEN_IGNORED)
 		return str, nil
 	default:
-		return "", errors.New("parseString(): not a string.")
+		return "", errors.New("parseString(): not a string")
 	}
 }
 
+// LiteralNumber   ::= "-"?[0-9]+ Ignored
 func parseInt(lexer *Lexer) (int, error) {
 	var numstr string
 	var err error
@@ -41,7 +42,7 @@ func parseInt(lexer *Lexer) (int, error) {
 		return 0, err
 	}
 	num, err := strconv.Atoi(numstr)
-	return num, nil
+	return num, err
 }
 
 // Variable ::= "$" Name Ignored

@@ -45,19 +45,8 @@ func GetCCode(source []byte) bytes.Buffer {
 }
 
 func writeToFile(buffer *bytes.Buffer) (string, error) {
-	// tmpfile, err := os.CreateTemp("", "wen*.c")
-	// if err != nil {
-	// 	return "", err
-	// }
 	err := os.WriteFile("a.c", buffer.Bytes(), 0644)
-	// if _, err := tmpfile.Write(buffer.Bytes()); err != nil {
-	// 	return "", err
-	// }
-	// if err := tmpfile.Close(); err != nil {
-	// 	return "", err
-	// }
 	return "a.c", err
-	// return tmpfile.Name(), nil
 }
 
 func GenerateCCode(source []byte) (string, error) {

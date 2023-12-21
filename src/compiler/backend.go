@@ -13,41 +13,49 @@ import (
 
 const MEM_SIZE int = 30000
 
+// MemoryVariable represents a memory variable with a start index and length.
 type MemoryVariable struct {
 	Start  int
 	Length int
 }
 
+// GlobalVariables represents the global variables in the program.
 type GlobalVariables struct {
 	Variables map[string]MemoryVariable
 }
 
+// GlobalMemory represents the global memory in the program.
 type GlobalMemory struct {
 	Memory []int
 }
 
+// NewGlobalVariables creates a new instance of GlobalVariables.
 func NewGlobalVariables() *GlobalVariables {
 	var g GlobalVariables
 	g.Variables = make(map[string]MemoryVariable)
 	return &g
 }
 
+// NewGlobalMemory creates a new instance of GlobalMemory.
 func NewGlobalMemory() *GlobalMemory {
 	var m GlobalMemory
 	m.Memory = make([]int, MEM_SIZE)
 	return &m
 }
 
+// NewGlobalPointer creates a new instance of a global pointer.
 func NewGlobalPointer() *int {
 	var ptr int
 	return &ptr
 }
 
+// NewGlobalRegister creates a new instance of a global register.
 func NewGlobalRegister() *int {
 	var reg int
 	return &reg
 }
 
+// Execute executes the given code with the specified filename.
 func Execute(code, filename string) {
 	var ast *Block
 	var err error
@@ -68,21 +76,22 @@ func Execute(code, filename string) {
 	}
 }
 
+// resolveAST resolves the abstract syntax tree (AST) of the program.
 func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, r *int, ast *Block) error {
 	if len(ast.Stats) == 0 {
-		return errors.New("resolveAST(): no code to execute, please check your input.")
+		return errors.New("resolveAST(): no code to execute, please check your input")
 	}
 	// Execute init statements first
-	// for _, statement := range ast.Stats {
 	switch s := ast.Stats[len(ast.Stats)-1].(type) {
 	case *StringExp:
 		if err := resolveInit(m, s); err != nil {
 			return err
 		}
-		break
 	}
 	// Execute all other statements
+	// continueCnt is a variable that represents the number of times a loop should continue.
 	var continueCnt int
+	// rushB is a boolean that represents whether we are in a rush B status.
 	var rushB bool
 	for _, statement := range ast.Stats {
 		if continueCnt > 0 {
@@ -90,21 +99,19 @@ func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, r *int, ast *Block)
 			continue
 		}
 		if err := resolveStatement(rushB, g, m, p, r, statement); err != nil {
-			if err.Error() == ("resolveIf(): rushB") {
+			if err.Error() == ("resolveIf(): rushB") { // If we encounter a rush B statement, we should skip the next statement.
 				rushB = true
 				continue
-			} else if err.Error() == ("resolveIf(): end rush B") && rushB {
+			} else if err.Error() == ("resolveIf(): end rush B") && rushB { // If we encounter an end rush B statement, we should stop skipping the next statement.
 				rushB = false
 				continueCnt = 0
 				continue
 			} else if err.Error() == ("resolveIf(): time to die") {
 				return nil
 			} else if err.Error() == "resolveIf(): start == 0" {
-				// fmt.Printf("resolveIf(): if start error\n")
 				continueCnt = 0
 				continue
 			} else if err.Error() == ("resolveIf(): start > 0") {
-				// fmt.Printf("resolveIf(): start > 0\n")
 				continueCnt = 1
 				continue
 			} else if err.Error() == ("resolveIf(): start < 0") {
@@ -117,8 +124,8 @@ func resolveAST(g *GlobalVariables, m *GlobalMemory, p *int, r *int, ast *Block)
 	return nil
 }
 
+// resolveStatement resolves a statement in the program.
 func resolveStatement(rushB bool, g *GlobalVariables, m *GlobalMemory, p *int, r *int, statement Stat) error {
-	// fmt.Printf("statement: %T\n", statement)
 	if rushB {
 		switch statement := statement.(type) {
 		case *IfStat:
@@ -151,19 +158,16 @@ func resolveStatement(rushB bool, g *GlobalVariables, m *GlobalMemory, p *int, r
 	}
 }
 
-/*
-******************************************************************
- */
-
+// resolveIf resolves an if statement in the program.
 func resolveIf(m *GlobalMemory, p *int, ifStat *IfStat) error {
 	if ifStat.Type == lexer.TOKEN_IF_START {
-		if m.Memory[*p] == 0 {
+		if m.Memory[*p] == 0 { // If the current cell is zero, we should skip the next statement.
 			*p += 1
 			return errors.New("resolveIf(): start == 0")
-		} else if m.Memory[*p] > 0 {
+		} else if m.Memory[*p] > 0 { // If the current cell is greater than zero, we should skip the next two statements.
 			*p += 2
 			return errors.New("resolveIf(): start > 0")
-		} else {
+		} else { // If the current cell is less than zero, we should skip the next three statements.
 			*p += 3
 			return errors.New("resolveIf(): start < 0")
 		}
@@ -177,6 +181,7 @@ func resolveIf(m *GlobalMemory, p *int, ifStat *IfStat) error {
 	return nil
 }
 
+// resolveReg resolves a register statement in the program.
 func resolveReg(m *GlobalMemory, p *int, r *int, reg *RegStat) error {
 	switch reg.Reg {
 	case lexer.TOKEN_REG_STORE:
@@ -206,6 +211,7 @@ func resolveReg(m *GlobalMemory, p *int, r *int, reg *RegStat) error {
 	return nil
 }
 
+// resolveInit resolves an initialization statement in the program.
 func resolveInit(m *GlobalMemory, init *StringExp) error {
 	Length := len(init.Str)
 	for i := 0; i < Length; i++ {
@@ -214,6 +220,7 @@ func resolveInit(m *GlobalMemory, init *StringExp) error {
 	return nil
 }
 
+// resolveLoop resolves a loop statement in the program.
 func resolveLoop(rushB bool, g *GlobalVariables, m *GlobalMemory, p *int, r *int, loop *LoopStat) error {
 	for m.Memory[*p] != 0 { // Continue looping while the current cell is not zero
 		for _, stat := range loop.Stats {
@@ -231,14 +238,15 @@ func resolveLoop(rushB bool, g *GlobalVariables, m *GlobalMemory, p *int, r *int
 	return nil
 }
 
+// resolveAssignment resolves an assignment statement in the program.
 func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *AssignStat) error {
 	varName := ""
 	if varName = assignment.Variable.Name; varName == "" {
-		return errors.New("resolveAssignment(): variable name can NOT be empty.")
+		return errors.New("resolveAssignment(): variable name can NOT be empty")
 	}
 	Length := len(assignment.String)
-	if Length != 0 {
-		if assignment.Int {
+	if Length != 0 { // if assignment.String is not empty
+		if assignment.Int { // using int format
 			val, err := strconv.Atoi(assignment.String)
 			if err != nil {
 				return err
@@ -246,24 +254,23 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 			m.Memory[*p] = val
 			g.Variables[varName] = MemoryVariable{Start: *p, Length: 1}
 			*p += 1
-		} else {
+		} else { // using string format
 			for i := 0; i < Length; i++ {
 				m.Memory[*p+i] = int(assignment.String[i])
 			}
 			g.Variables[varName] = MemoryVariable{Start: *p, Length: Length}
 			*p += Length
 		}
-	} else {
-		if assignment.Length != 0 {
-			// Length = assignment.Length
+	} else { // adjust the length or start of the variable
+		if assignment.Length != 0 { // adjust the length of the variable
 			var gVar = g.Variables[varName]
 			gVar.Length += assignment.Length
 			g.Variables[varName] = gVar
-		} else if assignment.Start != 0 {
+		} else if assignment.Start != 0 { // adjust the start of the variable
 			var gVar = g.Variables[varName]
 			gVar.Start += assignment.Start
 			g.Variables[varName] = gVar
-		} else {
+		} else { // get the start of the variable
 			// TOKEN_VAR_START
 			*p = g.Variables[varName].Start
 		}
@@ -271,9 +278,10 @@ func resolveAssignment(g *GlobalVariables, m *GlobalMemory, p *int, assignment *
 	return nil
 }
 
+// resolvePrint resolves a print statement in the program.
 func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) error {
 	varName := ""
-	if nil == print.Variable {
+	if nil == print.Variable { // print value at the data pointer
 		if print.Int {
 			fmt.Printf("%d", m.Memory[*p])
 		} else {
@@ -281,8 +289,8 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 		}
 		return nil
 	} else if varName = print.Variable.Name; varName == "" {
-		return errors.New("resolvePrint(): variable name can NOT be empty.")
-	} else {
+		return errors.New("resolvePrint(): variable name can NOT be empty")
+	} else { // print value of the variable
 		Start := g.Variables[varName].Start
 		Length := g.Variables[varName].Length
 		if print.Int {
@@ -298,9 +306,10 @@ func resolvePrint(g *GlobalVariables, m *GlobalMemory, p *int, print *Print) err
 	return nil
 }
 
+// resolveScanf resolves a scanf statement in the program.
 func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) error {
 	varName := ""
-	if nil == scanf.Variable {
+	if nil == scanf.Variable { // scanf value at the data pointer
 		if scanf.Int {
 			var input int
 			fmt.Scanf("%d", &input)
@@ -318,8 +327,8 @@ func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) err
 		}
 		return nil
 	} else if varName = scanf.Variable.Name; varName == "" {
-		return errors.New("resolvePrint(): variable name can NOT be empty.")
-	} else {
+		return errors.New("resolvePrint(): variable name can NOT be empty")
+	} else { // scanf value of the variable
 		if scanf.Int {
 			var input int
 			fmt.Scanf("%d", &input)
@@ -341,11 +350,13 @@ func resolveScanf(g *GlobalVariables, m *GlobalMemory, p *int, scanf *Scanf) err
 	return nil
 }
 
+// resolvePointer resolves a pointer statement in the program.
 func resolvePointer(p *int, pointer *PointerStat) error {
 	*p += pointer.Pointer
 	return nil
 }
 
+// resolveCell resolves a cell statement in the program.
 func resolveCell(m *GlobalMemory, p *int, cell *CellStat) error {
 	m.Memory[*p] += cell.Cell
 	return nil

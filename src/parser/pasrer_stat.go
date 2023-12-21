@@ -7,8 +7,9 @@ import (
 	. "github.com/ASC8384/wen/src/lexer"
 )
 
-var _statEmpty = &EmptyStat{}
+// var _statEmpty = &EmptyStat{}
 
+// parse statement
 func parseStat(lexer *Lexer) ([]Stat, error) {
 	lexer.LookAheadAndSkip(TOKEN_IGNORED) // skip if source code start with ignored token
 	var stats []Stat
@@ -49,17 +50,16 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 		stat, err = parseIf(lexer)
 
 	default:
-		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()])
+		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()]+" line: "+string(rune(lexer.Line())))
 	}
 	if stat != nil {
 		stats = append(stats, stat)
 	}
-	// if loops.Stats != nil {
-	// 	stats = append(stats, loops)
-	// }
+
 	return stats, err
 }
 
+// Init ::= "&" SourceCharacter
 func parseInitData(lexer *Lexer) (*StringExp, error) {
 	var InitData StringExp
 	// var err error
@@ -73,7 +73,7 @@ func parseInitData(lexer *Lexer) (*StringExp, error) {
 	return &InitData, nil
 }
 
-// Print ::= "print" "(" Ignored Variable Ignored ")" Ignored
+// Print ::= "o" "@"? "(" Ignored Variable Ignored ")" Ignored | "o" "@"? Ignored
 func parsePrint(lexer *Lexer) (*Print, error) {
 	var print Print
 	var err error
@@ -101,6 +101,7 @@ func parsePrint(lexer *Lexer) (*Print, error) {
 	return &print, nil
 }
 
+// Scanf ::= "v" "@"? "(" Ignored Variable Ignored ")" Ignored | "v" "@"? Ignored
 func parseScanf(lexer *Lexer) (*Scanf, error) {
 	var scanf Scanf
 	var err error
@@ -129,7 +130,7 @@ func parseScanf(lexer *Lexer) (*Scanf, error) {
 	return &scanf, nil
 }
 
-// Assignment      ::= Variable Ignored "=" Ignored LiteralString Ignored
+// Assignment      ::= Variable Ignored "=" "@"? Ignored LiteralString Ignored | Variable "(" Ignored LiteralNumber Ignored ")" Ignored | Variable "[" Ignored LiteralNumber Ignored "]" Ignored
 func parseAssignStat(lexer *Lexer) (*AssignStat, error) {
 	var assignment AssignStat
 	var err error
@@ -179,6 +180,7 @@ func parseAssignStat(lexer *Lexer) (*AssignStat, error) {
 	return &assignment, nil
 }
 
+// Pointer ::= "i" Ignored | "a" Ignored
 func parseIncPtr(lexer *Lexer) (*PointerStat, error) {
 	var PointerStat PointerStat
 
@@ -189,6 +191,7 @@ func parseIncPtr(lexer *Lexer) (*PointerStat, error) {
 	return &PointerStat, nil
 }
 
+// Pointer ::= "i" Ignored | "a" Ignored
 func parseDecPtr(lexer *Lexer) (*PointerStat, error) {
 	var PointerStat PointerStat
 
@@ -199,6 +202,7 @@ func parseDecPtr(lexer *Lexer) (*PointerStat, error) {
 	return &PointerStat, nil
 }
 
+// Cell ::= "l" Ignored | "e" Ignored
 func parseIncMem(lexer *Lexer) (*CellStat, error) {
 	var CellStat CellStat
 	CellStat.Line = lexer.Line()
@@ -208,6 +212,7 @@ func parseIncMem(lexer *Lexer) (*CellStat, error) {
 	return &CellStat, nil
 }
 
+// Cell ::= "l" Ignored | "e" Ignored
 func parseDecMem(lexer *Lexer) (*CellStat, error) {
 	var CellStat CellStat
 	CellStat.Line = lexer.Line()
@@ -217,6 +222,7 @@ func parseDecMem(lexer *Lexer) (*CellStat, error) {
 	return &CellStat, nil
 }
 
+// Loop ::= "b" Ignored Stat* "u" Ignored
 func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
 	var body LoopStat
 	var err error
@@ -247,10 +253,12 @@ func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
 	return &body, nil
 }
 
+// Loop ::= "b" Ignored Stat* "u" Ignored
 func paeseLoopClose(lexer *Lexer) ([]Stat, error) {
 	return nil, errors.New("parseLoopClose(): unexpected ']' without matching '['")
 }
 
+// Reg ::= "A" [+-*/%] Ignored
 func parseReg(lexer *Lexer) (*RegStat, error) {
 	var reg RegStat
 	// var err error
@@ -282,9 +290,9 @@ func parseReg(lexer *Lexer) (*RegStat, error) {
 		return nil, errors.New("parseReg(): unknown Reg." + TokenNameMap[lexer.LookAhead()])
 	}
 	return &reg, nil
-
 }
 
+// If ::= "B" | "V" | "#"
 func parseIf(lexer *Lexer) (*IfStat, error) {
 	var ifstat IfStat
 	ifstat.Line = lexer.Line()

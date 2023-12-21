@@ -113,39 +113,12 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 		}
 		lexer.next(1)
 		return lexer.line, TOKEN_QUOTE, "\""
-	case 'i':
-		lexer.next(1)
-		return lexer.line, TOKEN_INC_PTR, "i"
-	case 'a':
-		lexer.next(1)
-		return lexer.line, TOKEN_DEC_PTR, "a"
-	case 'l':
-		lexer.next(1)
-		return lexer.line, TOKEN_INC_MEM, "l"
-	case 'e':
-		lexer.next(1)
-		return lexer.line, TOKEN_DEC_MEM, "e"
-	case 'b':
-		lexer.next(1)
-		return lexer.line, TOKEN_LOOP_OPEN, "b"
-	case 'u':
-		lexer.next(1)
-		return lexer.line, TOKEN_LOOP_CLOSE, "u"
-	case 'v':
-		lexer.next(1)
-		return lexer.line, TOKEN_SCANF, "v"
-	case 'o':
-		lexer.next(1)
-		return lexer.line, TOKEN_PRINT, "o"
 	case '&':
 		lexer.next(1)
 		return lexer.line, TOKEN_INIT_DATA, "&"
 	case '@':
 		lexer.next(1)
 		return lexer.line, TOKEN_VAR_INT, "@"
-	case 'A':
-		lexer.next(1)
-		return lexer.line, TOKEN_REG, "A"
 	case '!':
 		lexer.next(1)
 		return lexer.line, TOKEN_REG_STORE, "!"
@@ -167,20 +140,18 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 	case '?':
 		lexer.next(1)
 		return lexer.line, TOKEN_REG_READ, "?"
-	case 'B':
-		lexer.next(1)
-		return lexer.line, TOKEN_IF_START, "B"
-	case 'R':
-		lexer.next(1)
-		return lexer.line, TOKEN_IF_RUSH, "R"
 	case '#':
 		lexer.next(1)
 		return lexer.line, TOKEN_IF_END, "#"
-	case 'E':
-		lexer.next(1)
-		return lexer.line, TOKEN_END, "E"
 	}
 	c := lexer.chunk[0]
+	// check single character token
+	if isLetter(c) {
+		if tokenType, isMatch := keywords[string(c)]; isMatch {
+			lexer.next(1)
+			return lexer.line, tokenType, string(c)
+		}
+	}
 	// check multiple character token
 	if c == '_' || isLetter(c) {
 		token := lexer.scanIdentifier()
@@ -196,7 +167,7 @@ func (lexer *Lexer) NextToken() (line, kind int, token string) {
 		return lexer.line, TOKEN_NUMBER, token
 		// lexer.error("not support number.")
 	}
-	lexer.error("unexpected symbol near %q", c)
+	lexer.error("unexpected symbol near %q on line %d", c, lexer.line)
 	return
 }
 
@@ -297,10 +268,6 @@ func (lexer *Lexer) scanIdentifier() string {
 
 func (lexer *Lexer) scanNumber() string {
 	token := lexer.scan(reNumber)
-	// number, err := strconv.Atoi(token)
-	// if err != nil {
-	// 	lexer.error("invalid number: %s", token)
-	// }
 	return token
 }
 
@@ -321,7 +288,7 @@ func (lexer *Lexer) NextIdentifier() (line int, token string) {
 func (lexer *Lexer) NextTokenIs(kind int) (line int, token string) {
 	line, _kind, token := lexer.NextToken()
 	if kind != _kind {
-		lexer.error("syntax error near '%s'", token)
+		lexer.error("syntax error near '%s' on line %d", token, lexer.line)
 	}
 	return line, token
 }

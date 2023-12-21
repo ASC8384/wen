@@ -2,19 +2,27 @@ SourceCharacter ::=  #x0009 | #x000A | #x000D | [#x0020-#xFFFF]
 
 StringCharacter ::= SourceCharacter - '"'
 LiteralString   ::= '"' '"' Ignored | '"' StringCharacter '"' Ignored
+LiteralNumber   ::= "-"?[0-9]+ Ignored
 
 Name            ::= [_A-Za-z][_0-9A-Za-z]*
 Variable        ::= "$" Name Ignored
 
-exp             ::=  nil | false | true | Numeral | exp binop exp | unop exp | LiteralString | Variable
-
+exp             ::=  nil | false | true | Numeral | exp binop exp | unop exp | LiteralString | Variable | LiteralNumber
 
 Assignment      ::= Variable Ignored "=" Ignored LiteralString Ignored
-Print           ::= "print" "(" Ignored Variable Ignored ")" Ignored
+Print           ::= "o" "@"? "(" Ignored Variable Ignored ")" Ignored | "o" "@"? Ignored
+Scanf           ::= "v" "@"? "(" Ignored Variable Ignored ")" Ignored | "v" "@"? Ignored
+Assignment      ::= Variable Ignored "=" "@"? Ignored LiteralString Ignored | Variable "(" Ignored LiteralNumber Ignored ")" Ignored | Variable "[" Ignored LiteralNumber Ignored "]" Ignored
+Pointer         ::= "i" Ignored | "a" Ignored
+Cell            ::= "l" Ignored | "e" Ignored
+Loop            ::= "b" Ignored Stat* "u" Ignored
+Reg             ::= "A" [+-*/%] Ignored
+If              ::= "B" | "V" | "#"
 
-stat            ::=  Assignment | Print | label | break | goto Name | if exp then block "elseif exp then block"* "else block"? end
+Init            ::= "&" SourceCharacter
+
+stat            ::= Assignment | Print | Register | If | Loop | Scanf | Pointer | Cell
 
 block           ::= stat+
-retstat         ::= return exp+
 
 SourceCode      ::= block+
