@@ -34,3 +34,4 @@ go.work
 
 .vscode/
 .VSCodeCounter/
+*.c

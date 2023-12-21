@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"strconv"
 
 	. "github.com/ASC8384/wen/src/ast"
 	. "github.com/ASC8384/wen/src/lexer"
@@ -50,7 +51,7 @@ func parseStat(lexer *Lexer) ([]Stat, error) {
 		stat, err = parseIf(lexer)
 
 	default:
-		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()]+" line: "+string(rune(lexer.Line())))
+		stats, err = nil, errors.New("parseStat(): unknown Stat."+TokenNameMap[lexer.LookAhead()]+" line: "+strconv.Itoa(lexer.Line()))
 	}
 	if stat != nil {
 		stats = append(stats, stat)
@@ -246,7 +247,7 @@ func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
 	if lexer.LookAhead() == TOKEN_LOOP_CLOSE {
 		lexer.NextToken()
 	} else {
-		return nil, errors.New("parseLoopOpen(): expected ']' at the end of the loop")
+		return nil, errors.New("parseLoopOpen(): expected 'u' at the end of the loop")
 	}
 
 	lexer.LookAheadAndSkip(TOKEN_IGNORED)
@@ -255,7 +256,7 @@ func parseLoopOpen(lexer *Lexer) (*LoopStat, error) {
 
 // Loop ::= "b" Ignored Stat* "u" Ignored
 func paeseLoopClose(lexer *Lexer) ([]Stat, error) {
-	return nil, errors.New("parseLoopClose(): unexpected ']' without matching '['")
+	return nil, errors.New("parseLoopClose(): unexpected 'u' without matching 'b'")
 }
 
 // Reg ::= "A" [+-*/%] Ignored
@@ -287,7 +288,7 @@ func parseReg(lexer *Lexer) (*RegStat, error) {
 		lexer.NextTokenIs(TOKEN_REG_READ)
 		reg.Reg = TOKEN_REG_READ
 	default:
-		return nil, errors.New("parseReg(): unknown Reg." + TokenNameMap[lexer.LookAhead()])
+		return nil, errors.New("parseReg(): unknown Reg." + TokenNameMap[lexer.LookAhead()] + " line: " + strconv.Itoa(lexer.Line()))
 	}
 	return &reg, nil
 }
